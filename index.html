@@ -1,1 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA — Futuristic Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
 
+  <main class="calc" role="application" aria-label="Calculator">
+    <div class="calc__glow" aria-hidden="true"></div>
+
+    <header class="calc__header">
+      <span class="calc__label">NOVA</span>
+      <span class="calc__status" id="status" aria-hidden="true">READY</span>
+    </header>
+
+    <section class="display" aria-live="polite">
+      <div class="display__trace" aria-hidden="true"></div>
+      <div class="display__history" id="history">&nbsp;</div>
+      <div class="display__main" id="output">0</div>
+    </section>
+
+    <section class="keys" id="keys">
+      <button class="key key--util" data-action="clear">AC</button>
+      <button class="key key--util" data-action="negate">+/&minus;</button>
+      <button class="key key--util" data-action="percent">%</button>
+      <button class="key key--op" data-action="op" data-op="÷">÷</button>
+
+      <button class="key key--num" data-action="num" data-num="7">7</button>
+      <button class="key key--num" data-action="num" data-num="8">8</button>
+      <button class="key key--num" data-action="num" data-num="9">9</button>
+      <button class="key key--op" data-action="op" data-op="×">×</button>
+
+      <button class="key key--num" data-action="num" data-num="4">4</button>
+      <button class="key key--num" data-action="num" data-num="5">5</button>
+      <button class="key key--num" data-action="num" data-num="6">6</button>
+      <button class="key key--op" data-action="op" data-op="−">−</button>
+
+      <button class="key key--num" data-action="num" data-num="1">1</button>
+      <button class="key key--num" data-action="num" data-num="2">2</button>
+      <button class="key key--num" data-action="num" data-num="3">3</button>
+      <button class="key key--op" data-action="op" data-op="+">+</button>
+
+      <button class="key key--num key--zero" data-action="num" data-num="0">0</button>
+      <button class="key key--num" data-action="decimal">.</button>
+      <button class="key key--equals" data-action="equals">=</button>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var outputEl = document.getElementById("output");
+      var historyEl = document.getElementById("history");
+      var statusEl = document.getElementById("status");
+      var keysEl = document.getElementById("keys");
+
+      var current = "0";
+      var previous = null;
+      var operator = null;
+      var justEvaluated = false;
+
+      function setStatus(text) {
+        statusEl.textContent = text;
+      }
+
+      function updateDisplay() {
+        outputEl.textContent = current;
+        historyEl.textContent = previous !== null && operator
+          ? previous + " " + operator
+          : "\u00A0";
+      }
+
+      function inputDigit(digit) {
+        if (justEvaluated) {
+          current = digit;
+          justEvaluated = false;
+        } else if (current === "0") {
+          current = digit;
+        } else if (current.replace("-", "").length < 12) {
+          current += digit;
+        }
+        setStatus("INPUT");
+        updateDisplay();
+      }
+
+      function inputDecimal() {
+        if (justEvaluated) {
+          current = "0";
+          justEvaluated = false;
+        }
+        if (current.indexOf(".") === -1) {
+          current += ".";
+        }
+        updateDisplay();
+      }
+
+      function negate() {
+        if (current !== "0") {
+          current = current.charAt(0) === "-" ? current.slice(1) : "-" + current;
+          updateDisplay();
+        }
+      }
+
+      function percent() {
+        current = String(parseFloat(current) / 100);
+        updateDisplay();
+      }
+
+      function clearAll() {
+        current = "0";
+        previous = null;
+        operator = null;
+        justEvaluated = false;
+        setStatus("READY");
+        updateDisplay();
+      }
+
+      function compute(a, b, op) {
+        a = parseFloat(a);
+        b = parseFloat(b);
+        switch (op) {
+          case "+": return a + b;
+          case "−": return a - b;
+          case "×": return a * b;
+          case "÷": return b === 0 ? NaN : a / b;
+          default: return b;
+        }
+      }
+
+      function formatResult(num) {
+        if (isNaN(num)) return "Error";
+        var str = String(Math.round(num * 1e10) / 1e10);
+        if (str.length > 12) {
+          str = num.toExponential(5);
+        }
+        return str;
+      }
+
+      function chooseOperator(op) {
+        if (operator && previous !== null && !justEvaluated) {
+          var result = compute(previous, current, operator);
+          current = formatResult(result);
+        }
+        previous = current;
+        operator = op;
+        justEvaluated = true; 
+        setStatus("OP: " + op);
+        updateDisplay();
+      }
+
+      function equals() {
+        if (operator === null || previous === null) return;
+        var result = compute(previous, current, operator);
+        current = formatResult(result);
+        previous = null;
+        operator = null;
+        justEvaluated = true;
+        setStatus(current === "Error" ? "ERROR" : "RESULT");
+        updateDisplay();
+      }
+
+      keysEl.addEventListener("click", function (e) {
+        var btn = e.target.closest(".key");
+        if (!btn) return;
+
+        var action = btn.getAttribute("data-action");
+
+        switch (action) {
+          case "num":
+            inputDigit(btn.getAttribute("data-num"));
+            break;
+          case "decimal":
+            inputDecimal();
+            break;
+          case "negate":
+            negate();
+            break;
+          case "percent":
+            percent();
+            break;
+          case "clear":
+            clearAll();
+            break;
+          case "op":
+            chooseOperator(btn.getAttribute("data-op"));
+            break;
+          case "equals":
+            equals();
+            break;
+        }
+
+        btn.classList.remove("key--pulse");
+        void btn.offsetWidth;
+        btn.classList.add("key--pulse");
+      });
+
+      window.addEventListener("keydown", function (e) {
+        var key = e.key;
+        var map = { "*": "×", "/": "÷", "-": "−" };
+
+        if (/^[0-9]$/.test(key)) {
+          inputDigit(key);
+        } else if (key === ".") {
+          inputDecimal();
+        } else if (key === "+" || key === "-" || key === "*" || key === "/") {
+          chooseOperator(map[key] || key);
+        } else if (key === "Enter" || key === "=") {
+          e.preventDefault();
+          equals();
+        } else if (key === "Backspace") {
+          current = current.length > 1 ? current.slice(0, -1) : "0";
+          updateDisplay();
+        } else if (key === "Escape") {
+          clearAll();
+        } else if (key === "%") {
+          percent();
+        }
+      });
+
+      updateDisplay();
+    })();
+  </script>
+</body>
+</html>
