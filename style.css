@@ -1,1 +1,310 @@
+/* =========================================================
+   NOVA Calculator — Design tokens
+   Background   : #04070D  (deep space)
+   Panel        : #0D1524  (glass base, used with alpha)
+   Accent cyan  : #00E5FF  (operators / primary glow)
+   Accent green : #39FF9E  (equals / success)
+   Accent pink  : #FF3E9E  (active operator state)
+   Text bright  : #EAF6FF
+   Text muted   : #5C7089
+   Display font : 'Orbitron'      (digits, brand)
+   UI font      : 'Space Grotesk' (buttons, labels)
+   ========================================================= */
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #04070d;
+  --panel: rgba(13, 21, 36, 0.55);
+  --panel-solid: #0b1220;
+  --border: rgba(0, 229, 255, 0.25);
+  --cyan: #00e5ff;
+  --green: #39ff9e;
+  --pink: #ff3e9e;
+  --text: #eaf6ff;
+  --muted: #5c7089;
+}
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  padding: 24px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  font-family: "Space Grotesk", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle at 20% 15%, rgba(0, 229, 255, 0.10), transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(255, 62, 158, 0.10), transparent 45%),
+    linear-gradient(180deg, #04070d 0%, #060a14 100%);
+  background-attachment: fixed;
+}
+
+/* ---------- Calculator shell ---------- */
+
+.calc {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  padding: 22px;
+  border-radius: 26px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+    0 20px 60px rgba(0, 0, 0, 0.55),
+    0 0 40px rgba(0, 229, 255, 0.08);
+}
+
+/* fallback for browsers without backdrop-filter support */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .calc {
+    background: var(--panel-solid);
+  }
+}
+
+.calc__glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: 26px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.6), rgba(255, 62, 158, 0.35), transparent 60%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.calc__header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+.calc__label {
+  font-family: "Orbitron", "Space Grotesk", sans-serif;
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: 0.35em;
+  color: var(--cyan);
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+}
+
+.calc__status {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  font-family: "Space Grotesk", sans-serif;
+}
+
+/* ---------- Display ---------- */
+
+.display {
+  position: relative;
+  border-radius: 16px;
+  background: #030509;
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  padding: 20px 18px 16px;
+  margin-bottom: 18px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+
+.display__trace {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0.7;
+}
+
+.display__history {
+  min-height: 16px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: right;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.display__main {
+  font-family: "Orbitron", "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: clamp(32px, 9vw, 42px);
+  line-height: 1.1;
+  text-align: right;
+  color: var(--text);
+  text-shadow: 0 0 18px rgba(234, 246, 255, 0.25);
+  word-break: break-all;
+  white-space: nowrap;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.display__main::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Keys ---------- */
+
+.keys {
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-columns: 1fr 10px 1fr 10px 1fr 10px 1fr;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.key {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px 0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  transition: transform 0.08s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.key:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.key:active {
+  transform: scale(0.94);
+}
+
+.key:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.key--num {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.key--zero {
+  grid-column: span 2;
+}
+
+.key--util {
+  background: rgba(92, 112, 137, 0.15);
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.key--op {
+  background: rgba(0, 229, 255, 0.08);
+  color: var(--cyan);
+  border-color: rgba(0, 229, 255, 0.25);
+}
+
+.key--op:hover {
+  background: rgba(0, 229, 255, 0.16);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.25);
+}
+
+.key--equals {
+  background: linear-gradient(135deg, rgba(57, 255, 158, 0.25), rgba(0, 229, 255, 0.18));
+  color: var(--green);
+  border-color: rgba(57, 255, 158, 0.35);
+  font-weight: 700;
+}
+
+.key--equals:hover {
+  box-shadow: 0 0 20px rgba(57, 255, 158, 0.35);
+}
+
+/* Pulse feedback shared by every key press, re-triggered via class toggle in JS */
+.key--pulse {
+  -webkit-animation: keyPulse 0.35s ease-out;
+  animation: keyPulse 0.35s ease-out;
+}
+
+@-webkit-keyframes keyPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.45); }
+  100% { box-shadow: 0 0 0 14px rgba(0, 229, 255, 0); }
+}
+
+@keyframes keyPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.45); }
+  100% { box-shadow: 0 0 0 14px rgba(0, 229, 255, 0); }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 380px) {
+  .calc {
+    padding: 16px;
+    border-radius: 20px;
+  }
+  .key {
+    padding: 14px 0;
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 480px) {
+  .calc {
+    max-width: 360px;
+  }
+}
+
+/* ---------- Accessibility ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .key,
+  .key--pulse {
+    -webkit-animation: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
